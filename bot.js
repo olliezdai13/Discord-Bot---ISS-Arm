@@ -36,11 +36,13 @@ client.on('message', msg => {
 	
 	const args = msg.content.slice(prefix.length).trim().split(/ +/g);
 	const command = "" + args.shift().toLowerCase();
+	let ranCommand = false;
 
 	console.log("command processed: " + command);
 
 	//Start commands that can be run in any channel:
 	if (command === "anchor") {
+		ranCommand = true;
 		console.log("command entered: anchor");
 		msgChannelId = msg.channel.id;
 		channel = client.channels.get(msgChannelId);
@@ -48,22 +50,18 @@ client.on('message', msg => {
 	}
 
 	if (command === "status") {
+		ranCommand = true;
 		console.log("command entered: status");
 		msg.reply(	"International Space Station's Arm moving as usual\n"
 				+ "Arm module anchored to channel: " + getAnchor() + "\n"
 		);
 	}
-
-	if (command === "") {
-		console.log("command entered: \"\"");
-		msg.reply("type \"iss arm help\" for a list of commands");
-	}
 	//End commands that can be run in any channel.
 
-	if (supportedCommands.includes(command) && msg.channel.id != msgChannelId) { 
+	if (supportedCommands.includes(command) && !ranCommand && msg.channel.id != msgChannelId) { 
 		msg.reply("That command requires you to install the ISS Arm. Try running \"iss arm anchor\"");	
 		return;
-	} else if (msg.channel.id != msgChannelId) return;
+	}
 	if (msg.channel.id != msgChannelId) return;
 	
 	//The following commands will only be run if they are initiated in the anchor channel.
