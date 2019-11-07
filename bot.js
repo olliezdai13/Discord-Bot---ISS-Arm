@@ -7,6 +7,8 @@ let msgChannelId = null;
 let channel = null;
 let reddit = null;
 
+const supportedCommands = ["anchor", "status", "author_reddit", "help"];
+
 client.on('ready', () => {
 	console.log("Logged in as " + client.user.tag + "!");
 });
@@ -57,24 +59,37 @@ client.on('message', msg => {
 		msg.reply("type \"iss arm help\" for a list of commands");
 	}
 	//End commands that can be run in any channel.
-	
+
+	if (supportedCommands.includes(command) && msg.channel.id != msgChannelId) { 
+		msg.reply("That command requires you to install the ISS Arm. Try running \"iss arm anchor\"");	
+		return;
+	} else if (msg.channel.id != msgChannelId) return;
 	if (msg.channel.id != msgChannelId) return;
 	
 	//The following commands will only be run if they are initiated in the anchor channel.
 
 	if (command === "help") {
+		let commands = "";
+		supportedCommands.forEach(cmd => { commands = commands + cmd + "\n\t"; });
 		console.log("command entered: help");
 		channel.send("ISS ARM MODULE INSTRUCTIONS ARE AS FOLLOWS:\nTo run a command, type \"iss arm <command>\"\n\n"
-				+ "COMMANDS:\n\thelp\n\tstatus\n\tanchor");
+				+ "COMMANDS:\n\t" + commands);
 	}
 
-	if (command === "reddittest") {
+	if (command === "author_reddit") {
 		console.log("command entered: reddittest");
 		console.log("Snoowrap initialized as: " + reddit);
-		reddit.getUser('tunabearmonkey').fetch().then(userInfo => {
-			console.log(userInfo.name);
-			console.log(userInfo.created_utc);
-		})
+		try {
+			reddit.getUser('tunabearmonkey').fetch().then(userInfo => {
+				console.log(userInfo.name);
+				console.log(userInfo.created_utc);
+				channel.send("Bot author's reddit account info: name=" + userInfo.name + " \t created_utc=" + userInfo.created_utc);
+			})
+		} catch(error) {
+			console.log("An error occurred when running command 'reddittest'. Perhaps reddit api did not initialize successfully?");
+			console.log("Error Msg: " + error.message);
+			channel.send("An error occurred. Please try again later");
+		}
 	}
 
 });
